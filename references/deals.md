@@ -49,7 +49,7 @@ ContactAction (object_type='deal', object_id=deal.id)
 - `notesResult` is a human-readable label shown in the activity feed (e.g. "Phone Call", "Left Voicemail", "Sent Proposal"). Defaults to the capitalized `activityType` if not provided.
 - `forDate` is when the activity happened (not when you're logging it). Use ISO 8601 datetime.
 - `direction` applies to calls and SMS: `incoming` = customer called us, `outgoing` = we called them.
-- Activity `body` is always plain text. If the original content was HTML (email), it is stripped and newlines are preserved.
+- Activity `body` is plain text for notes/calls/SMS. For `email` type activities, `body` is **markdown** — converted from HTML, with tracking pixels, layout tables, and scripts removed. The `subject` field contains the email subject line (null for all other types).
 - For deal activities: `contactId` is optional (defaults to the deal's primary contact).
 - For org activities: `contactId` is required — the org may have multiple contacts.
 
@@ -284,38 +284,50 @@ For lost deals:
 
 ---
 
-## Activities (Deals)
+## Deal Activities
+
+Activities on a deal include notes, calls, and SMS logged directly on the deal, plus Gmail emails synced from any contact at the deal's linked organization.
+
+For the unified activity response shape and `activityType` values, see [api.md](api.md#activity-feed--unified-format).
 
 ### GET /deals/{id}/activities
-List all activities on a deal, newest first. `perPage` default: 20.
+List all activities for a deal, newest first.
+
+**Query params:**
+| Param     | Type | Description |
+|-----------|------|-------------|
+| `perPage` | int  | Results per page (default: 20, max: 100) |
+| `page`    | int  | Page number (default: 1) |
 
 **Response:**
 ```json
 {
   "data": [
     {
-      "id": 101,
+      "id": 91,
       "activityType": "call",
-      "notesResult": "Phone Call - Left Voicemail",
+      "subject": null,
+      "notesResult": "Discovery Call",
       "direction": "outgoing",
-      "body": "Called John about the proposal. Left voicemail to follow up.",
-      "forDate": "2025-04-05T14:00:00+00:00",
-      "author": { "id": 5, "name": "Jane Smith" },
+      "body": "Spoke with John about their pain points. Strong interest in the Enterprise plan.",
+      "forDate": "2025-04-02T15:00:00+00:00",
+      "author": { "id": 10, "name": "Jane Smith" },
       "contact": null,
       "isPinned": false,
-      "createdAt": "2025-04-05T14:30:00+00:00"
+      "createdAt": "2025-04-02T15:05:00+00:00"
     },
     {
-      "id": 99,
+      "id": 83,
       "activityType": "email",
-      "notesResult": null,
+      "subject": "Enterprise plan details",
+      "notesResult": "Enterprise plan details",
       "direction": "outgoing",
-      "body": "Hi John,\n\nPlease find the proposal attached...",
-      "forDate": "2025-04-03T10:00:00+00:00",
+      "body": "Hi John,\n\nAttached is the Enterprise plan breakdown you requested...",
+      "forDate": "2025-04-01T11:00:00+00:00",
       "author": null,
       "contact": null,
       "isPinned": false,
-      "createdAt": "2025-04-03T10:00:00+00:00"
+      "createdAt": "2025-04-01T11:00:00+00:00"
     }
   ],
   "pagination": { "total": 8, "perPage": 20, "currentPage": 1, "lastPage": 1 }
@@ -327,31 +339,30 @@ Note: `email` activities are read-only (Gmail-synced).
 ---
 
 ### POST /deals/{id}/activities
-Create a note, call, or SMS on a deal.
+Log a new activity (note, call, or SMS) on a deal.
 
 **Body:**
 ```json
 {
   "activityType": "note",
-  "body": "Customer confirmed budget is approved.",
-  "notesResult": "Meeting Notes",
-  "forDate": "2025-04-05T14:00:00+00:00",
+  "body": "Client requested a custom contract. Following up next week.",
+  "notesResult": "Follow-up Note",
+  "forDate": "2025-04-05T10:00:00+00:00",
+  "contactId": 5,
   "direction": "outgoing"
 }
 ```
-Required: `activityType`, `body`.
 
-**Response:** `201 Created` — ActivityResource
+| Field          | Required | Description |
+|----------------|----------|-------------|
+| `activityType` | ✅       | `note` \| `call` \| `sms` |
+| `body`         | ✅       | Plain text content |
+| `notesResult`  | —        | Display label. Defaults to capitalized activityType |
+| `forDate`      | —        | ISO datetime (default: now) |
+| `contactId`    | —        | Defaults to the deal's primary contact |
+| `direction`    | —        | `incoming` \| `outgoing` (default: outgoing) |
 
----
-
-## Activities (Projects)
-
-### GET /projects/{id}/activities
-Same format as deal activities.
-
-### POST /projects/{id}/activities
-Same format. Additional optional `contactId` field.
+**Response:** `201 Created` — activity item (same shape as GET response above)
 
 ---
 

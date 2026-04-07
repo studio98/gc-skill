@@ -548,3 +548,83 @@ All time entries for a project — project-level entries (`type: "project"`) and
 Time entries on a specific step or sub-step only.
 
 **Response:** Same format. All entries will have `type: "projectTask"` and `stepId` set.
+
+---
+
+## Activities
+
+Activities on a project include notes, calls, SMS logged directly on the project, plus Gmail emails sent to/from any contact at the project's linked organization.
+
+For the unified activity response shape and `activityType` values, see [api.md](api.md#activity-feed--unified-format).
+
+### GET /projects/{id}/activities
+List all activities for a project, newest first.
+
+**Query params:**
+| Param     | Type | Description |
+|-----------|------|-------------|
+| `perPage` | int  | Results per page (default: 20, max: 100) |
+| `page`    | int  | Page number (default: 1) |
+
+**Response:**
+```json
+{
+  "data": [
+    {
+      "id": 55,
+      "activityType": "note",
+      "subject": null,
+      "notesResult": "Project Kickoff Notes",
+      "direction": "outgoing",
+      "body": "Kicked off the project with the client. Agreed on milestone dates.",
+      "forDate": "2025-04-01T10:00:00+00:00",
+      "author": { "id": 10, "name": "Jane Smith" },
+      "contact": null,
+      "isPinned": false,
+      "createdAt": "2025-04-01T10:00:00+00:00"
+    },
+    {
+      "id": 61,
+      "activityType": "email",
+      "subject": "Project scope confirmation",
+      "notesResult": "Project scope confirmation",
+      "direction": "outgoing",
+      "body": "Hi,\n\nThis email confirms the agreed project scope...",
+      "forDate": "2025-03-30T09:15:00+00:00",
+      "author": null,
+      "contact": null,
+      "isPinned": false,
+      "createdAt": "2025-03-30T09:15:00+00:00"
+    }
+  ],
+  "pagination": { "total": 12, "perPage": 20, "currentPage": 1, "lastPage": 1 }
+}
+```
+
+---
+
+### POST /projects/{id}/activities
+Log a new activity (note, call, or SMS) on a project.
+
+**Body:**
+```json
+{
+  "activityType": "call",
+  "body": "Called client to discuss next milestone. They confirmed the timeline.",
+  "notesResult": "Phone Call",
+  "forDate": "2025-04-05T11:00:00+00:00",
+  "contactId": 5,
+  "direction": "outgoing"
+}
+```
+
+| Field          | Required | Description |
+|----------------|----------|-------------|
+| `activityType` | ✅       | `note` \| `call` \| `sms` |
+| `body`         | ✅       | Plain text content |
+| `notesResult`  | —        | Display label. Defaults to capitalized activityType |
+| `forDate`      | —        | ISO datetime (default: now) |
+| `contactId`    | —        | Associate with a specific contact (optional) |
+| `direction`    | —        | `incoming` \| `outgoing` (default: outgoing) |
+
+**Response:** `201 Created` — activity item (same shape as GET response above)

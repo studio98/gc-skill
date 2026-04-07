@@ -242,3 +242,100 @@ Each field has:
 - `label` — display name (e.g. "Industry", "LinkedIn URL")
 - `type` — `text` | `dropdown` | `singleOption` | `multiOptions`
 - `value` — string for text/dropdown/singleOption (label returned), array for multiOptions
+
+---
+
+## Activities
+
+Activities on an organization aggregate across all contacts belonging to that org, plus Gmail emails sent to/from any org contact, plus support tickets linked to the org.
+
+For the unified activity response shape and `activityType` values, see [api.md](api.md#activity-feed--unified-format).
+
+### GET /organizations/{id}/activities
+List all activities for an organization, newest first.
+
+Includes: notes, calls, SMS (logged by staff) + Gmail emails (synced) + support tickets.
+
+**Query params:**
+| Param     | Type | Description |
+|-----------|------|-------------|
+| `perPage` | int  | Results per page (default: 20, max: 100) |
+| `page`    | int  | Page number (default: 1) |
+
+**Response:**
+```json
+{
+  "data": [
+    {
+      "id": 88,
+      "activityType": "email",
+      "subject": "Re: Renewal proposal",
+      "notesResult": "Re: Renewal proposal",
+      "direction": "outgoing",
+      "body": "Hi John,\n\nPlease find the renewal proposal attached...",
+      "forDate": "2025-04-01T10:30:00+00:00",
+      "author": null,
+      "contact": null,
+      "isPinned": false,
+      "createdAt": "2025-04-01T10:30:00+00:00"
+    },
+    {
+      "id": 77,
+      "activityType": "note",
+      "subject": null,
+      "notesResult": "Meeting Notes",
+      "direction": "outgoing",
+      "body": "Discussed Q2 goals. Client is happy with current plan.",
+      "forDate": "2025-03-28T14:00:00+00:00",
+      "author": { "id": 10, "name": "Jane Smith" },
+      "contact": null,
+      "isPinned": false,
+      "createdAt": "2025-03-28T14:05:00+00:00"
+    },
+    {
+      "id": 102,
+      "activityType": "ticket",
+      "subject": "Billing question for March invoice",
+      "notesResult": "Support Ticket",
+      "direction": "incoming",
+      "body": null,
+      "forDate": "2025-03-25T09:00:00+00:00",
+      "author": null,
+      "contact": null,
+      "isPinned": false,
+      "createdAt": "2025-03-25T09:00:00+00:00"
+    }
+  ],
+  "pagination": { "total": 45, "perPage": 20, "currentPage": 1, "lastPage": 3 }
+}
+```
+
+---
+
+### POST /organizations/{id}/activities
+Log a new activity (note, call, or SMS) on an organization via a specific contact.
+
+**`contactId` is required** — the org may have multiple contacts and the activity must be associated with one.
+
+**Body:**
+```json
+{
+  "contactId": 5,
+  "activityType": "note",
+  "body": "Spoke with John about the contract renewal.",
+  "notesResult": "Meeting Notes",
+  "forDate": "2025-04-01T14:00:00+00:00",
+  "direction": "outgoing"
+}
+```
+
+| Field          | Required | Description |
+|----------------|----------|-------------|
+| `contactId`    | ✅       | Contact ID belonging to this org |
+| `activityType` | ✅       | `note` \| `call` \| `sms` |
+| `body`         | ✅       | Plain text content |
+| `notesResult`  | —        | Display label (e.g. "Phone Call", "Left Voicemail"). Defaults to capitalized activityType |
+| `forDate`      | —        | ISO datetime of when it happened (default: now) |
+| `direction`    | —        | `incoming` \| `outgoing` (default: outgoing) |
+
+**Response:** `201 Created` — activity item (same shape as GET response above)
