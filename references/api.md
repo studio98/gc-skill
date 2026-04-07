@@ -1,63 +1,54 @@
-# GrandCentral API Reference
+# GrandCentral Agent API Reference
 
-> **TODO for Claude Code:** Enumerate all available API actions by calling the API with an introspection action (e.g. `listActions`, `getSchema`, or equivalent). Document every action here with its full parameter list and response shape.
-> API URL and key are in TOOLS.md / context.md.
+Base URL: `{GRANDCENTRAL_API_URL}` (e.g. `https://api-v2.yourdomain.com/api`)
 
-## Table of Contents
-- [Organizations](#organizations)
-- [Contacts](#contacts)
-- [Deals](#deals)
-- [Projects](#projects)
-- [Support Tickets](#support-tickets)
-- [Tasks](#tasks)
-- [Activities](#activities)
-- [Checklists](#checklists)
-- [Knowledge Base](#knowledge-base)
-- [Users](#users)
-- [Notifications](#notifications)
+All requests require:
+```
+Authorization: Bearer {GRANDCENTRAL_API_KEY}
+Content-Type: application/json
+```
 
----
+## Modules
 
-## Organizations
+| Module                | Base Path           | Reference File                     |
+|-----------------------|---------------------|------------------------------------|
+| Users (staff, r/o)    | /users              | references/tickets.md              |
+| Support Tickets       | /tickets            | references/tickets.md              |
+| Support Tasks         | /tickets/{id}/tasks | references/tickets.md              |
+| Organizations         | /organizations      | references/organizations.md        |
+| Contacts              | /contacts           | references/organizations.md        |
+| Deals / Sales         | /deals              | references/deals.md _(coming soon)_ |
 
-<!-- TODO: Fill in all org actions, params, and response shapes -->
+## Authentication
 
-## Contacts
+API keys are created in GrandCentral → Settings → API Keys.
+Keys are prefixed `gc_` and are scoped to a specific company within a tenant.
 
-<!-- TODO: Fill in all contact actions, params, and response shapes -->
+Pass the key as a Bearer token:
+```
+Authorization: Bearer gc_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+```
 
-## Deals
+## Response Format
 
-<!-- TODO: Fill in all deal actions, params, and response shapes -->
+All responses are JSON. List endpoints return arrays directly or paginated objects:
+```json
+{
+  "data": [...],
+  "pagination": { "total": 100, "perPage": 20, "currentPage": 1, "lastPage": 5 }
+}
+```
 
-## Projects
+Error responses (HTTP 4xx):
+```json
+{ "message": "Descriptive error message" }
+```
 
-<!-- TODO: Fill in all project actions, params, and response shapes -->
+Success responses for non-resource actions (e.g. delete):
+```json
+{ "success": true, "message": "Task deleted" }
+```
 
-## Support Tickets
+## Timestamps
 
-<!-- TODO: Fill in all ticket actions, params, and response shapes -->
-
-## Tasks
-
-<!-- TODO: Fill in all task actions, params, and response shapes -->
-
-## Activities
-
-<!-- TODO: Fill in all activity actions, params, and response shapes -->
-
-## Checklists
-
-<!-- TODO: Fill in all checklist actions, params, and response shapes -->
-
-## Knowledge Base
-
-<!-- TODO: Fill in KB actions, params, and response shapes -->
-
-## Users
-
-<!-- TODO: Fill in user actions, params, and response shapes -->
-
-## Notifications
-
-<!-- TODO: Fill in notification actions, params, and response shapes -->
+All timestamps are ISO 8601 format: `"2025-04-01T10:00:00+00:00"`
