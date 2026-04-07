@@ -1,6 +1,6 @@
 # GrandCentral Agent API Reference
 
-Base URL: `{GRANDCENTRAL_API_URL}` (e.g. `https://api-v2.yourdomain.com/api`)
+Base URL: `{GRANDCENTRAL_API_URL}` (e.g. `https://yourdomain.com/api/gc/v1`)
 
 All requests require:
 ```
@@ -10,24 +10,19 @@ Content-Type: application/json
 
 ## Modules
 
-| Module                | Base Path           | Reference File                     |
-|-----------------------|---------------------|------------------------------------|
-| Users (staff, r/o)    | /users              | references/tickets.md              |
-| Support Tickets       | /tickets            | references/tickets.md              |
-| Support Tasks         | /tickets/{id}/tasks | references/tickets.md              |
-| Organizations         | /organizations      | references/organizations.md        |
-| Contacts              | /contacts           | references/organizations.md        |
-| Deals / Sales         | /deals              | references/deals.md _(coming soon)_ |
+| Module                     | Base Path          | Reference File              |
+|----------------------------|--------------------|-----------------------------|
+| Support Tickets            | /tickets           | references/tickets.md       |
+| Users (read-only)          | /users             | references/tickets.md       |
+| Projects                   | /projects          | references/projects.md      |
+| Deals & Activities         | /deals             | references/deals.md         |
+| Organizations & Activities | /organizations     | references/deals.md         |
+| Proposals                  | /proposals         | references/proposals.md _(coming soon)_ |
 
 ## Authentication
 
 API keys are created in GrandCentral → Settings → API Keys.
-Keys are prefixed `gc_` and are scoped to a specific company within a tenant.
-
-Pass the key as a Bearer token:
-```
-Authorization: Bearer gc_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-```
+Keys are prefixed `gc_` and scoped to a specific company within a tenant.
 
 ## Response Format
 
@@ -39,14 +34,9 @@ All responses are JSON. List endpoints return arrays directly or paginated objec
 }
 ```
 
-Error responses (HTTP 4xx):
+Error responses:
 ```json
-{ "message": "Descriptive error message" }
-```
-
-Success responses for non-resource actions (e.g. delete):
-```json
-{ "success": true, "message": "Task deleted" }
+{ "success": false, "message": "Descriptive error message" }
 ```
 
 ## Timestamps
