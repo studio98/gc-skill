@@ -4,7 +4,7 @@ All endpoints require:
 ```
 Authorization: Bearer {GRANDCENTRAL_API_KEY}
 Content-Type: application/json
-Base URL: {GRANDCENTRAL_API_URL}/api/gc/v1
+Base URL: https://api-v2.grandcentr.al/api
 ```
 
 Tasks are global to-dos assigned to team members. They support priorities, due dates, subtasks, assignees, custom statuses, and comments.

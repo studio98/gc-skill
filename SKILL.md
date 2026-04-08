@@ -1,77 +1,147 @@
 ---
 name: grandcentral
-description: Interact with GrandCentral CRM. Use when asked to look up clients, contacts, organizations, deals, projects, or support tickets in GrandCentral; when creating or updating CRM records (orgs, contacts, deals, projects, tasks, tickets); when logging notes or activities; when checking ticket queues, deal pipelines, or project boards; when managing checklists, knowledge base, or tasks. Triggers on any request involving GrandCentral, GC, client records, deals, projects, or support tickets.
+description: Interact with GrandCentral CRM. Use when asked to look up clients, contacts, organizations, deals, projects, support tickets, tasks, subscription boards, or the document library in GrandCentral; when creating or updating CRM records (orgs, contacts, deals, projects, tasks, tickets); when logging notes, calls, or activities; when checking ticket queues, deal pipelines, project boards, or task lists; when reading SOPs, policies, or custom documents from the library; when managing subscription board checklists or delivery items. Triggers on any request involving GrandCentral, GC, client records, deals, projects, support tickets, tasks, or internal documents.
 ---
 
 # GrandCentral CRM Skill
 
-GrandCentral is a CRM platform. This skill provides instructions for interacting with the GrandCentral API.
+GrandCentral is a full-stack CRM platform. This skill provides instructions for interacting with the GrandCentral REST API.
 
 ## Configuration (required before use)
 
-Before using this skill, the following must be configured in your local `TOOLS.md` or environment:
+| Setting                  | Description |
+|--------------------------|-------------|
+| `GRANDCENTRAL_API_KEY`   | API key (prefixed `gc_`) — get from GrandCentral → Settings → API Keys |
 
-| Setting | Description |
-|---------|-------------|
-| `GRANDCENTRAL_API_URL` | Base API URL, e.g. `https://api.yourdomain.com/v1/tools` |
-| `GRANDCENTRAL_API_KEY` | Your API key |
+**Base URL:** `https://api-v2.grandcentr.al/api`
 
 **How to call the API:**
 ```
-POST {GRANDCENTRAL_API_URL}
-Authorization: {GRANDCENTRAL_API_KEY}
+GET/POST/PATCH/DELETE https://api-v2.grandcentr.al/api/{endpoint}
+Authorization: Bearer {GRANDCENTRAL_API_KEY}
 Content-Type: application/json
-
-{ "action": "<actionName>", ...params }
 ```
 
-Every request body must include `"action"`. See [references/api.md](references/api.md) for all available actions and parameters.
+Example: `GET https://api-v2.grandcentr.al/api/library/items?search=managing+deals`
+
+This is a standard REST API. Use the correct HTTP method for each endpoint (GET to read, POST to create, PATCH to update). Do NOT wrap requests in an `action` field.
 
 ---
 
 ## Module Reference Files
 
-Load the relevant reference file when working in that area. Do not load all files at once.
+Load only the reference file you need. Do not load all files at once.
 
-| Module | Reference File | When to load |
-|--------|---------------|--------------|
-| Organizations & Contacts | [references/organizations.md](references/organizations.md) | Looking up, creating, or updating orgs/contacts |
-| Deals | [references/deals.md](references/deals.md) | Deal pipeline, stages, creating/updating deals |
-| Projects | [references/projects.md](references/projects.md) | Project boards, stages, creating/updating projects |
-| Support Tickets | [references/tickets.md](references/tickets.md) | Ticket queues, channels, replies, triage |
-| Tasks & Activities | [references/tasks.md](references/tasks.md) | Tasks, checklists, notes, activity log |
-| Full API Reference | [references/api.md](references/api.md) | When you need params/response shapes for any action |
-| Instance Config | [references/context.md](references/context.md) | Team structure, routing rules, instance-specific IDs |
+| Module                   | Base Path             | Reference File                                       | When to load |
+|--------------------------|-----------------------|------------------------------------------------------|--------------|
+| Users (read-only)        | /users                | [references/tickets.md](references/tickets.md)       | Finding user IDs for assignment |
+| Support Tickets          | /tickets              | [references/tickets.md](references/tickets.md)       | Ticket queues, replies, triage, ticket tasks |
+| Organizations & Contacts | /organizations        | [references/organizations.md](references/organizations.md) | Looking up clients, contacts, orgs |
+| Deals                    | /deals                | [references/deals.md](references/deals.md)           | Deal pipeline, stages, proposals, activities |
+| Projects                 | /projects, /boards    | [references/projects.md](references/projects.md)     | Project boards, steps, time tracking |
+| Tasks (to-dos)           | /tasks                | [references/tasks.md](references/tasks.md)           | Company-wide task list, subtasks, assignment |
+| Subscription Board       | /subscription-board   | [references/subscription-board.md](references/subscription-board.md) | Delivery boards, setup/recurring checklists |
+| Library                  | /library              | [references/library.md](references/library.md)       | SOPs, policies, how-tos, custom documents |
+| Full API index           | —                     | [references/api.md](references/api.md)               | Module list, base URL, response format, activity feed format |
+| Instance config          | —                     | [references/context.md](references/context.md)       | Team structure, routing rules, instance-specific IDs |
 
 ---
 
-## Common Workflows (quick nav)
+## Common Workflows
 
-### Look up a client
+### Look up a client / org
 → Load [references/organizations.md](references/organizations.md)
+```
+GET /organizations?search=acme
+GET /organizations/{id}
+```
 
-### Create org + contact
+### Find a contact
 → Load [references/organizations.md](references/organizations.md)
+```
+GET /contacts?search=john
+GET /organizations/{orgId}/contacts
+```
 
-### Create / update a deal
+### Create or update a deal
 → Load [references/deals.md](references/deals.md)
+```
+GET /deals/boards          → get board & stage IDs
+POST /deals                → create
+PATCH /deals/{id}/stage    → move pipeline stage
+PATCH /deals/{id}/status   → mark won / lost
+```
 
-### Create / update a project
-→ Load [references/projects.md](references/projects.md)
+### Log a note, call, or activity
+→ Load the relevant module file (deals, projects, or organizations)
+```
+POST /deals/{id}/activities
+POST /projects/{id}/activities
+POST /organizations/{id}/activities
+```
 
 ### Support ticket triage
 → Load [references/tickets.md](references/tickets.md)
+```
+GET /tickets                         → open tickets
+POST /tickets/{id}/reply             → send reply to customer
+POST /tickets/{id}/notes             → add internal note
+PATCH /tickets/{id}/status           → close or change status
+PATCH /tickets/{id}/assign           → assign to team member
+```
 
-### Log a note or task
+### Check or manage tasks
 → Load [references/tasks.md](references/tasks.md)
+```
+GET /tasks                           → my open tasks (default)
+GET /tasks?assignedTo={userId}       → specific person's tasks
+POST /tasks                          → create a task
+PATCH /tasks/{id}/complete           → toggle completion
+POST /tasks/{id}/subtasks            → add a subtask
+POST /tasks/{id}/comments            → leave a comment
+```
 
-### Unknown action / need full param list
-→ Load [references/api.md](references/api.md)
+### Work with a project
+→ Load [references/projects.md](references/projects.md)
+```
+GET /boards                                        → find board & stage IDs
+GET /projects?orgId={id}                           → projects for a client
+GET /projects/{id}                                 → full project with steps
+POST /projects/{id}/sections/{sectionId}/steps     → add a step
+PATCH /projects/{id}/steps/{stepId}/complete       → complete a step
+```
+
+### Check subscription board / delivery checklists
+→ Load [references/subscription-board.md](references/subscription-board.md)
+```
+GET /subscription-board/boards             → list boards
+GET /subscription-board/items?boardId={id} → items on a board
+GET /subscription-board/items/{id}         → item detail with checklists
+```
+
+### Read a document or SOP from the library
+→ Load [references/library.md](references/library.md)
+```
+GET /library/items?search=managing+deals   → find by name
+GET /library/items/{id}/content            → get full Markdown text
+GET /library/folders                       → browse folder structure
+GET /library/folders/{id}                  → folder contents
+```
 
 ---
 
 ## Key Rules (always apply)
-- Orgs must have at least one contact before creating deals or projects
-- Always run lookup sequences to get IDs before creating records that need them (boards, channels, stages)
-- When marking a deal `lost`, a `lostExplain` reason is required
-- For natural language KB queries, prefer `getAiKbSearch` over `searchKnowledgeBase`
+
+- **REST only** — use GET, POST, PATCH, DELETE. Never use an `action` field.
+- **Look up IDs before creating** — always resolve board IDs, stage IDs, channel IDs, category IDs before using them in create/update calls.
+- **Tasks default to your own** — `GET /tasks` returns tasks assigned to the authenticated user. Pass `assignedTo={userId}` for someone else, or `all=true` for everyone.
+- **Deals default to in_progress** — `GET /deals` returns active deals only. Pass `status=won` or `status=lost` for closed deals.
+- **Projects default to active** — `GET /projects` returns active projects. Pass `status=completed` or `status=archived` for others.
+- **Tickets default to open** — `GET /tickets` returns open tickets. Pass `status=closed` for closed ones.
+- **Boolean query params** — pass as `true` / `false` strings (e.g. `?completed=true`), not as `1`/`0`.
+- **Lost deals require a reason** — when setting `status: "lost"`, always include `lostExplain`.
+- **No DELETE for deals or projects** — mark deals as `won`/`lost`; mark projects as `archived`/`completed`.
+- **Section delete needs confirmation** — if the API returns 422 (incomplete steps), stop and ask the user before passing `force: true`.
+- **Reply body is HTML** — ticket replies and notes use HTML. Use `<p>` tags only, no headers or heavy inline styles.
+- **Library content for file/chart types is null** — `file`, `flowChart`, and `orgChart` items return `content: null` from `/content`. Check `type` first.
+- **subtaskCount = open subtasks only** — `subtaskCount` reflects pending (non-completed) subtasks, not total.

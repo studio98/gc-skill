@@ -1,6 +1,6 @@
 # GrandCentral Agent API Reference
 
-Base URL: `{GRANDCENTRAL_API_URL}/api/gc/v1`  (e.g. `https://api-v2.yourdomain.com/api/gc/v1`)
+Base URL: `https://api-v2.grandcentr.al/api`
 
 All requests require:
 ```
@@ -19,6 +19,7 @@ Content-Type: application/json
 | Deals                      | /deals             | references/deals.md                          |
 | Subscription Boards        | /subscription-board| references/subscription-board.md                |
 | Tasks (to-dos)             | /tasks             | references/tasks.md                          |
+| Library                    | /library           | references/library.md                        |
 | Billing Subscriptions      | /billing           | _(not exposed via agent API)_                |
 
 > **Naming note:** `/subscription-board` refers to the operational marketing delivery boards (checklists, setup, recurring tasks). It is distinct from billing subscriptions (`OrganizationSubscription`), which are not exposed via this API.

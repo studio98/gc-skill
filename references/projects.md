@@ -4,7 +4,9 @@ All endpoints require:
 ```
 Authorization: Bearer {GRANDCENTRAL_API_KEY}
 Content-Type: application/json
-Base URL: {GRANDCENTRAL_API_URL}  (e.g. https://api-v2.yourdomain.com/api)
+Base URL: https://api-v2.grandcentr.al/api
+
+> All endpoints below are relative to this base URL.
 ```
 
 ---
