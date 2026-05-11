@@ -42,6 +42,7 @@ Load only the reference file you need. Do not load all files at once.
 | Tasks (to-dos)           | /tasks                | [references/tasks.md](references/tasks.md)           | Company-wide task list, subtasks, assignment |
 | Subscription Board       | /subscription-board   | [references/subscription-board.md](references/subscription-board.md) | Delivery boards, setup/recurring checklists |
 | Library                  | /library              | [references/library.md](references/library.md)       | SOPs, policies, how-tos, custom documents |
+| Calendar Events          | /calendar-events      | [references/calendar.md](references/calendar.md)     | Scheduling events, checking availability, RSVP |
 | Full API index           | —                     | [references/api.md](references/api.md)               | Module list, base URL, response format, activity feed format |
 | Instance config          | —                     | [references/context.md](references/context.md)       | Team structure, routing rules, instance-specific IDs |
 
@@ -130,6 +131,16 @@ GET /library/folders/{id}                  → folder contents
 
 ---
 
+### Schedule or check calendar availability
+→ Load [references/calendar.md](references/calendar.md)
+```
+GET /calendar-events/free-busy?startTime=...&endTime=...&userIds[]=5   → check if someone is free
+GET /calendar-events?startTime=...&endTime=...&userIds[]=5              → list someone's events for a period
+POST /calendar-events                                                    → book a new event
+PATCH /calendar-events/{id}                                              → update an event
+DELETE /calendar-events/{id}                                             → delete an event
+```
+
 ## Key Rules (always apply)
 
 - **REST only** — use GET, POST, PATCH, DELETE. Never use an `action` field.
@@ -145,3 +156,6 @@ GET /library/folders/{id}                  → folder contents
 - **Reply body is HTML** — ticket replies and notes use HTML. Use `<p>` tags only, no headers or heavy inline styles.
 - **Library content for file/chart types is null** — `file`, `flowChart`, and `orgChart` items return `content: null` from `/content`. Check `type` first.
 - **subtaskCount = open subtasks only** — `subtaskCount` reflects pending (non-completed) subtasks, not total.
+- **Calendar datetimes are ISO 8601 only** — always include a timezone offset (e.g. `-04:00` or `Z`). Unix timestamps are rejected. Read the `timezone` field on event responses to know the company's timezone.
+- **Check free-busy before booking** — call `GET /calendar-events/free-busy` before creating an event. If the API returns 409 (conflict), show the user the conflicting events and ask whether to proceed with `force: true`.
+- **Calendar `participants` replaces on update** — if you include `participants` in a PATCH body, it replaces the full list. Omit the field entirely to leave participants unchanged.
